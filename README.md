@@ -33,7 +33,6 @@ Próximo Vencimento: {$service_next_due_date}
 
 Obrigado por nos escolher!
 
-{$signature}
 ---------------------------------------------------------------------------------------
 
 Criado o template de email selecione o padrão de email para esse produto, o sistema vai criar automaticamente após a confirmação de pagamento se assim preferir e suspender caso não seja renovado, será capaz de reativar também após a confirmação de pagamento.
