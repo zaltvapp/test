@@ -8,6 +8,10 @@ Envie a pasta modules para o diretório principal do seu WHMCS.
 Crie um produto com a opção ''Produtos/Serviços'' na aba modules, selecione o módulo zaltv ou brazuca.
 Em login informe o seu login do Painel ZalTV/Brazuca e em senha informe a sua senha do painel.
 
+*Você precisa ter um plano de Revenda IPTV ZalTV, você pode contratar no link abaixo:
+
+https://www.zaltv.com.br/#section7
+
 Email Template (Email padrão de envio automático):
 
 Exemplo:
@@ -40,5 +44,13 @@ Criado o template de email selecione o padrão de email para esse produto, o sis
 Um módulo super simples para revenda IPTV com WHMCS para canais no Brasil.
 
 Lembrando que para usar o módulo você precisa de um plano de revenda IPTV ZalTV, os créditos são pagos apenas uma vez e não expiram ou seja, você tem tempo para vender e solicitar mais se assim desejar.
+
+Breve descrição do plano e funcionamento:
+
+https://central.zaltv.com.br/index.php?rp=/announcements/2/Revenda-IPTV-com-modulo-WHMCS.html
+
+Site para Contratação:
+
+https://www.zaltv.com.br/#section7
 
 Obrigado!
