@@ -20,7 +20,9 @@ Obrigado por contratar com a ZalTV, seu plano de TV está ativo e você pode ace
 Links de acesso ao navegador e link da lista para que você possa usar em Apps de IPTV:
 
 Acesso Pelo Navegador: http://brazuca.link/{$service_custom_field_brazucatoken}
+
 Lista IPTV: http://brazuca.link/hls/{$service_custom_field_brazucatoken}
+
 EPG: http://brazuca.link/xmltv/{$service_custom_field_brazucatoken}
 
 Serviço: {$service_product_name}
