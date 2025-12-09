@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contato • NebulaHost</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container nav">
+        <a class="logo" href="index.html">NebulaHost</a>
+        <nav class="nav-links">
+          <a href="index.html">Início</a>
+          <a href="sobre-nos.html">Sobre nós</a>
+          <a href="contato.html">Contato</a>
+        </nav>
+        <a class="btn btn-primary" href="contato.html">Contratar agora</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div>
+          <p class="tag">Fale com a gente</p>
+          <h1>Suporte 24/7 para acelerar sua operação</h1>
+          <p>
+            Nossa equipe responde em menos de 15 minutos em incidentes críticos. Envie uma
+            mensagem ou agende uma call para entender como podemos arquitetar sua migração.
+          </p>
+          <div class="grid" style="margin-top: 2rem">
+            <article class="card">
+              <h3>Central de suporte</h3>
+              <p>status.nebulahost.com</p>
+              <p>incident@nebulahost.com</p>
+            </article>
+            <article class="card">
+              <h3>Vendas e parcerias</h3>
+              <p>+55 (48) 4002-8922</p>
+              <p>sales@nebulahost.com</p>
+            </article>
+          </div>
+        </div>
+        <div class="hero-card">
+          <form>
+            <label>
+              Nome completo
+              <input type="text" name="nome" placeholder="Seu nome" required />
+            </label>
+            <label>
+              Empresa
+              <input type="text" name="empresa" placeholder="Nome da empresa" />
+            </label>
+            <label>
+              E-mail corporativo
+              <input type="email" name="email" placeholder="voce@empresa.com" required />
+            </label>
+            <label>
+              Mensagem
+              <textarea
+                name="mensagem"
+                rows="4"
+                placeholder="Conte sobre o seu projeto"
+                required
+              ></textarea>
+            </label>
+            <button class="btn btn-primary" type="submit">Enviar mensagem</button>
+          </form>
+          <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 1rem">
+            Ao enviar você concorda com nossa política de uso e privacidade.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <p class="tag">Disponibilidade</p>
+          <h2>Garantimos suporte humano em todos os fusos do Brasil</h2>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Chat em tempo real</h3>
+            <p>Atendimento 24/7 para incidentes críticos e dúvidas sobre painel.</p>
+          </article>
+          <article class="card">
+            <h3>Plantão DevOps</h3>
+            <p>Engenheiros especialistas em clusters Kubernetes e autoscaling.</p>
+          </article>
+          <article class="card">
+            <h3>Customer Success</h3>
+            <p>Reuniões mensais de revisão de arquitetura e otimização de custos.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>© <span id="year"></span> NebulaHost. Infraestrutura em nuvem com base no Brasil.</p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

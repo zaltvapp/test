@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sobre nós • NebulaHost</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="container nav">
+        <a class="logo" href="index.html">NebulaHost</a>
+        <nav class="nav-links">
+          <a href="index.html">Início</a>
+          <a href="sobre-nos.html">Sobre nós</a>
+          <a href="contato.html">Contato</a>
+        </nav>
+        <a class="btn btn-primary" href="contato.html">Contratar agora</a>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div>
+          <p class="tag">Nossa história</p>
+          <h1>Construímos infraestrutura confiável para quem cria o futuro</h1>
+          <p>
+            A NebulaHost nasceu em Florianópolis em 2016 com a missão de simplificar o
+            acesso a tecnologias de nuvem para empresas latino-americanas. Hoje atendemos
+            mais de 4.000 clientes em 9 países.
+          </p>
+        </div>
+        <div class="hero-card">
+          <h2>O que nos guia</h2>
+          <ul style="padding-left: 1.2rem; color: var(--text-light)">
+            <li>Disponibilidade como compromisso, não como promessa.</li>
+            <li>Transparência total sobre custos e arquitetura.</li>
+            <li>Suporte humano especializado em português e inglês.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <p class="tag">Valores</p>
+          <h2>Os pilares que orientam nossas decisões</h2>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Confiança radical</h3>
+            <p>
+              Publicamos status em tempo real e comunicamos incidentes em até 15 minutos,
+              independentemente do impacto.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Obsessão por desempenho</h3>
+            <p>
+              Equipes de SRE monitoram métricas 24/7 e acionam planos de resiliência
+              sempre que detectam oscilações.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Parceria verdadeira</h3>
+            <p>
+              Cada cliente corporativo conta com um Customer Reliability Engineer dedicado
+              para acompanhar roadmaps.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <p class="tag">Linha do tempo</p>
+          <h2>De startup regional a referência em nuvem</h2>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <h3>2016 • Lançamento</h3>
+            <p>Primeiro cluster em Florianópolis com foco em agências digitais.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>2018 • Expansão LatAm</h3>
+            <p>Abertura de data centers parceiros em Santiago e Cidade do México.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>2021 • Certificações</h3>
+            <p>Conquista de ISO 27001 e SOC 2, reforçando práticas de segurança.</p>
+          </div>
+          <div class="timeline-item">
+            <h3>2024 • Plataforma Orion</h3>
+            <p>
+              Lançamos automações de autoscaling com machine learning e integrações com
+              providers globais.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          <p class="tag">Equipe</p>
+          <h2>Liderança com DNA de produto e infraestrutura</h2>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>Bianca Peixoto</h3>
+            <p>CEO & Co-founder</p>
+            <p>Ex-líder de cloud na Euronet com 15 anos em operações críticas.</p>
+          </article>
+          <article class="card">
+            <h3>João Rabelo</h3>
+            <p>CTO</p>
+            <p>Especialista em redes distribuídas, lidera a área de P&D da NebulaHost.</p>
+          </article>
+          <article class="card">
+            <h3>Nayara Silveira</h3>
+            <p>Chief Customer Officer</p>
+            <p>
+              Responsável por programas de migração assistida e satisfação de clientes
+              enterprise.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>© <span id="year"></span> NebulaHost. Infraestrutura em nuvem com base no Brasil.</p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
