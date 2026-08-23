@@ -137,10 +137,13 @@ body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--t
 @media(min-width:1400px){.panel-b{padding:2rem 2.2rem}}
 
 /* Progress */
-.pbar{height:6px;border-radius:999px;background:var(--card2);overflow:hidden;margin-bottom:.5rem}
-.pbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--acc),var(--blue));background-size:200% 100%;animation:pbar-mv 3s linear infinite;transition:width 1s var(--ease)}
-@keyframes pbar-mv{from{background-position:0 0}to{background-position:200% 0}}
-.pmeta{font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--tx2)}
+.pbar{height:18px;border-radius:10px;background:var(--card2);overflow:hidden;margin-bottom:.6rem;position:relative;box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+.pbar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,var(--acc),var(--blue),var(--purple),var(--acc));background-size:300% 100%;animation:pbar-mv 4s linear infinite;transition:width 1.2s var(--ease);position:relative;overflow:hidden}
+.pbar i::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent,transparent 8px,rgba(255,255,255,.06) 8px,rgba(255,255,255,.06) 16px);animation:stripes 1.5s linear infinite}
+.pbar i::after{content:"";position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(to bottom,rgba(255,255,255,.15),transparent);border-radius:10px 10px 0 0}
+@keyframes pbar-mv{from{background-position:0 0}to{background-position:300% 0}}
+@keyframes stripes{from{background-position:0 0}to{background-position:32px 0}}
+.pmeta{font-family:"JetBrains Mono",monospace;font-size:.72rem;color:var(--tx2)}
 
 .camp-list{margin-top:.8rem;display:grid;gap:.35rem;max-height:200px;overflow-y:auto}
 .camp-r{display:grid;grid-template-columns:1.2fr 2.5fr auto;gap:.55rem;align-items:center;padding:.45rem .6rem;border-radius:8px;transition:background .15s}
@@ -249,6 +252,11 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
     <div class="mcard wk"><span class="mc-ico">⚡</span><div class="mc-val" id="vWk">—</div><div class="mc-lbl">Workers ativos</div><div class="mc-sub" id="subWk">—</div></div>
   </div>
 
+  <div class="panel" style="margin-bottom:1.8rem"><div class="panel-h"><h3>Progresso geral</h3></div><div class="panel-b" style="padding-top:1rem;padding-bottom:1rem">
+    <div class="pbar"><i id="pFill" style="width:0%"></i></div>
+    <div class="pmeta" id="pMeta">…</div>
+  </div></div>
+
   <div class="speed-row">
     <div class="scard">
       <div class="gauge"><div class="gauge-glow"></div><svg viewBox="0 0 160 90"><defs><linearGradient id="gg" x1="0%" y1="0%" x2="100%"><stop offset="0%" stop-color="#00dc96"/><stop offset="100%" stop-color="#3b9eff"/></linearGradient></defs><path class="gt" d="M 14 78 A 66 66 0 0 1 146 78"/><path class="gf" id="gFill" d="M 14 78 A 66 66 0 0 1 146 78" stroke-dasharray="207" stroke-dashoffset="207"/><text class="gv" x="80" y="70" id="gVal">0</text><text class="gu" x="80" y="86">emails/min</text></svg></div>
@@ -266,9 +274,7 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
     </div></div>
   </div>
 
-  <div class="panel"><div class="panel-h"><h3>Progresso</h3></div><div class="panel-b">
-    <div class="pbar"><i id="pFill" style="width:0%"></i></div>
-    <div class="pmeta" id="pMeta">…</div>
+  <div class="panel"><div class="panel-h"><h3>Campanhas</h3></div><div class="panel-b">
     <div class="camp-list" id="campList"></div>
   </div></div>
 
