@@ -356,7 +356,7 @@ function isWC(w){return w.status==="concluído"||((w.jobs_pending||0)===0&&(w.jo
 
 async function refresh(){
   const s=await api("/api/stats"),a=await api("/api/activity");
-  const em=s.emails??0,st=s.websites??0;track(eHist,em);track(sHist,st);updateSpeed();
+  const em=s.emails_total??s.emails??0,st=s.websites_total??s.websites??0;track(eHist,em);track(sHist,st);updateSpeed();
   document.getElementById("vEm").textContent=fmt(em);document.getElementById("vSt").textContent=fmt(st);
   document.getElementById("vWk").textContent=`${s.workers_online}/${s.workers_total}`;
   document.getElementById("subWk").textContent=`${fmt(a.running)} jobs rodando`;
