@@ -71,6 +71,9 @@ body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--t
 .mcard.wk .mc-val{color:var(--purple)}
 .mcard .mc-lbl{font-size:.85rem;color:var(--tx2);font-weight:500}
 .mcard .mc-sub{font-size:.74rem;color:var(--tx3);margin-top:.4rem;font-family:"JetBrains Mono",monospace}
+.mcard .mc-total{margin-top:.6rem;padding:.4rem .6rem;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid var(--brd);font-size:.68rem;color:var(--tx3);font-family:"JetBrains Mono",monospace}
+.btn-reset{font-size:.68rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;background:transparent;color:var(--tx3);border:1px solid var(--brd);cursor:pointer;transition:all .2s}
+.btn-reset:hover{border-color:var(--orange);color:var(--orange)}
 @media(min-width:1400px){.mcard .mc-lbl{font-size:.95rem}.mcard .mc-sub{font-size:.82rem}}
 .mcard.em{border-color:rgba(0,220,150,.1)}.mcard.st{border-color:rgba(59,158,255,.08)}.mcard.wk{border-color:rgba(160,124,255,.08)}
 
@@ -247,9 +250,9 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 <!-- DASHBOARD -->
 <div class="page on" id="pg-dash">
   <div class="metrics">
-    <div class="mcard em" id="mcEm"><span class="mc-ico">✉️</span><div class="mc-val" id="vEm">—</div><div class="mc-lbl">Emails capturados</div><div class="mc-sub" id="subEm">—</div></div>
-    <div class="mcard st"><span class="mc-ico">🌐</span><div class="mc-val" id="vSt">—</div><div class="mc-lbl">Sites coletados</div><div class="mc-sub" id="subSt">—</div></div>
-    <div class="mcard wk"><span class="mc-ico">⚡</span><div class="mc-val" id="vWk">—</div><div class="mc-lbl">Workers ativos</div><div class="mc-sub" id="subWk">—</div></div>
+    <div class="mcard em" id="mcEm"><span class="mc-ico">✉️</span><div class="mc-val" id="vEm">—</div><div class="mc-lbl">Emails capturados</div><div class="mc-sub" id="subEm">—</div><div class="mc-total" id="totEm"></div></div>
+    <div class="mcard st"><span class="mc-ico">🌐</span><div class="mc-val" id="vSt">—</div><div class="mc-lbl">Sites coletados</div><div class="mc-sub" id="subSt">—</div><div class="mc-total" id="totSt"></div></div>
+    <div class="mcard wk"><span class="mc-ico">⚡</span><div class="mc-val" id="vWk">—</div><div class="mc-lbl">Workers ativos</div><div class="mc-sub" id="subWk">—</div><div style="margin-top:.8rem"><button class="btn-reset" onclick="resetCounter()">Zerar contador</button></div></div>
   </div>
 
   <div class="panel" style="margin-bottom:1.8rem"><div class="panel-h"><h3>Progresso geral</h3></div><div class="panel-b" style="padding-top:1rem;padding-bottom:1rem">
@@ -356,8 +359,14 @@ function isWC(w){return w.status==="concluído"||((w.jobs_pending||0)===0&&(w.jo
 
 async function refresh(){
   const s=await api("/api/stats"),a=await api("/api/activity");
-  const em=s.emails_total??s.emails??0,st=s.websites_total??s.websites??0;track(eHist,em);track(sHist,st);updateSpeed();
-  document.getElementById("vEm").textContent=fmt(em);document.getElementById("vSt").textContent=fmt(st);
+  const emSession=s.emails_session??s.emails_total??s.emails??0;
+  const stSession=s.websites_session??s.websites_total??s.websites??0;
+  const emTotal=s.emails_total??s.emails??0;
+  const stTotal=s.websites_total??s.websites??0;
+  track(eHist,emSession);track(sHist,stSession);updateSpeed();
+  document.getElementById("vEm").textContent=fmt(emSession);document.getElementById("vSt").textContent=fmt(stSession);
+  document.getElementById("totEm").textContent=`Total desde o início: ${fmt(emTotal)} emails`;
+  document.getElementById("totSt").textContent=`Total desde o início: ${fmt(stTotal)} sites`;
   document.getElementById("vWk").textContent=`${s.workers_online}/${s.workers_total}`;
   document.getElementById("subWk").textContent=`${fmt(a.running)} jobs rodando`;
   document.getElementById("livePill").textContent=`${s.workers_online} online · ${fmt(a.running)} rodando`;
@@ -382,6 +391,12 @@ async function cancelW(s){const seg=decodeURIComponent(s);if(!confirm(`Cancelar 
 function dlCsv(s){const seg=decodeURIComponent(s);fetch("/api/export.csv?segment="+encodeURIComponent(seg),{headers:{Authorization:"Bearer "+token}}).then(r=>{if(!r.ok)throw 0;const cd=r.headers.get("Content-Disposition")||"";const m=/filename="?([^";]+)"?/i.exec(cd);return r.blob().then(b=>({b,n:m?m[1]:"leads-"+seg+".csv"}))}).then(({b,n})=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;a.click()})}
 let _tt;document.getElementById("segment").addEventListener("input",()=>{clearTimeout(_tt);_tt=setTimeout(async()=>{const t=document.getElementById("segment").value.trim();if(!t){document.getElementById("trPrev").textContent="→ —";return}try{const r=await api("/api/translate",{method:"POST",body:JSON.stringify({text:t,country:"MX"})});document.getElementById("trPrev").textContent=`→ ${r.example_query||r.translated}`}catch(_){}},350)});
 async function addWorker(){const n=document.getElementById("wname").value.trim();if(!n)return;const r=await api("/api/workers",{method:"POST",body:JSON.stringify({name:n,ip:document.getElementById("wip").value.trim()})});document.getElementById("wout").style.display="block";document.getElementById("wout").textContent=`${r.name}: ${r.token}`;refresh()}
+async function resetCounter(){
+  if(!confirm("Zerar o contador de sessão?\n\nOs dados NÃO serão apagados — apenas o contador visual zera.\nO total histórico continua visível."))return;
+  await api("/api/counter/reset",{method:"POST",body:"{}"});
+  eHist=[];sHist=[];
+  refresh();
+}
 if(token)showApp();setInterval(()=>{if(token)refresh().catch(()=>{})},6000);
 </script>
 </body>
