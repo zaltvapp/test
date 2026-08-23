@@ -373,7 +373,7 @@ async function refresh(){
   document.getElementById("subWk").textContent=`${fmt(a.running)} jobs rodando`;
   document.getElementById("livePill").textContent=`${s.workers_online} online · ${fmt(a.running)} rodando`;
   document.getElementById("sbTxt").textContent=`${s.workers_online}`;
-  if(prevEmails!==null&&em>prevEmails)burst(em-prevEmails);prevEmails=em;prevSites=st;
+  if(prevEmails!==null&&emSession>prevEmails)burst(emSession-prevEmails);prevEmails=emSession;prevSites=stSession;
   document.getElementById("proxyHint").innerHTML=(s.mode_policy?`<b style="color:var(--acc)">${s.mode_policy.label}</b><br>${s.mode_policy.detail}<br><br>`:"")+s.proxy_hint+(s.proxy_configured?" · ✓":"");
   const cs=document.getElementById("cityScope");if(cs&&Array.isArray(s.city_scopes)&&s.city_scopes.length&&!cs.dataset.f){cs.innerHTML=s.city_scopes.map(x=>`<option value="${x.id}">${x.label}</option>`).join("");cs.dataset.f="1"}
   document.getElementById("pFill").style.width=`${a.percent||0}%`;
