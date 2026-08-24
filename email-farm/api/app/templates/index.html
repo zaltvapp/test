@@ -253,6 +253,7 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
   <div class="nv" onclick="pg('jobs',this)"><span class="ic">📋</span><span class="txt">Atividade</span></div>
   <div class="sb-section">Infra</div>
   <div class="nv" onclick="pg('work',this)"><span class="ic">🖥️</span><span class="txt">Workers</span></div>
+  <div class="nv" onclick="pg('calc',this)"><span class="ic">📐</span><span class="txt">Análise</span></div>
   <div class="nv" onclick="pg('cfg',this)"><span class="ic">⚙️</span><span class="txt">Configuração</span></div>
   <div class="sb-foot"><span class="sb-dot"></span><b id="sbTxt">10 online</b></div>
 </aside>
@@ -316,8 +317,9 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
   <div style="display:grid;grid-template-columns:1fr 340px;gap:1.2rem">
     <div class="panel"><div class="panel-h"><h3>Trabalhos</h3></div><div class="panel-b"><div id="works"></div></div></div>
     <div class="fpanel"><h3>Nova campanha</h3>
-      <label>Segmento (PT → ES-MX)</label><input id="segment" placeholder="advogados, dentistas…"/>
-      <div class="prev" id="trPrev">→ —</div>
+          <label>Segmento (PT → ES-MX)</label><input id="segment" placeholder="advogados, dentistas…"/>
+          <div class="prev" id="trPrev">→ —</div>
+          <div id="segWarn" style="font-size:.75rem;margin-top:.3rem;min-height:1rem"></div>
       <label>País</label><select id="country"><option value="MX">México (MX)</option></select>
       <label>Municípios</label><select id="cityScope"><option value="standard">Padrão (~964)</option><option value="major">Top ~300</option></select>
       <p class="hint" id="csHint">Campanhas rodam em paralelo.</p>
@@ -341,6 +343,22 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
   </div>
 </div>
 
+<!-- ANALISE -->
+<div class="page" id="pg-calc">
+  <div class="panel"><div class="panel-h"><h3>Performance & Estimativas</h3></div><div class="panel-b" id="calcResults" style="line-height:1.8">Carregando dados reais...</div></div>
+  <div class="panel"><div class="panel-h"><h3>Calculadora de Scaling</h3></div><div class="panel-b">
+    <p class="hint" style="margin:0 0 1rem">Simule o impacto de adicionar mais VPS ao farm (baseado na performance real das últimas horas).</p>
+    <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+      <div><div class="llbl">Workers extras</div><input id="calcWorkers" type="number" value="10" min="1" max="100" style="width:80px"/></div>
+      <button class="btn-p" onclick="runCalc()">Calcular</button>
+    </div>
+    <div id="calcOutput" style="margin-top:1rem"></div>
+  </div></div>
+  <div class="panel"><div class="panel-h"><h3>Recomendação</h3></div><div class="panel-b">
+    <p class="hint" style="margin:0">• <b>964 cidades</b> = cobertura total MX (~91% pop.) — mais emails no total, ideal para segmentos amplos<br>• <b>300 cidades</b> = só cidades grandes (>78k hab.) — mais emails <i>por cidade</i>, menos tráfego, ideal para segmentos específicos<br>• Com 30 workers, ambos completam rápido. Use 300 para testes rápidos e 964 para extração completa.<br>• Cada +10 workers aumenta ~35% a velocidade proporcional.</p>
+  </div></div>
+</div>
+
 <!-- CONFIG -->
 <div class="page" id="pg-cfg">
   <div class="fpanel" style="max-width:520px"><h3>Proxy & Política</h3><p class="hint" id="proxyHint">…</p></div>
@@ -349,24 +367,44 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 </main></div></div>
 
 <script>
-let token=localStorage.getItem("lf_token")||"",jobFilter="live",prevEmails=null,prevSites=null,prevWorkStatus={},audioCtx=null,eHist=[],sHist=[];const HW=60000;
+let token=localStorage.getItem("lf_token")||"",jobFilter="live",prevEmails=null,prevSites=null,prevWorkStatus={},audioCtx=null;
 function pg(id,el){document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));document.getElementById("pg-"+id).classList.add("on");document.querySelectorAll(".nv").forEach(n=>n.classList.remove("on"));if(el)el.classList.add("on")}
-function track(a,v){const n=Date.now();a.push({t:n,v});while(a.length&&n-a[0].t>HW)a.shift()}
-function rate(a){if(a.length<2)return 0;const f=a[0],l=a[a.length-1],dt=(l.t-f.t)/1000;return dt<1?0:Math.max(0,(l.v-f.v)/dt)}
-function updateSpeed(){
-  const eps=rate(eHist),epm=eps*60,sps=rate(sHist),spm=sps*60;
-  const gf=document.getElementById("gFill");if(gf)gf.style.strokeDashoffset=207*(1-Math.min(1,epm/120));
-  document.getElementById("gVal").textContent=Math.round(epm);
-  document.getElementById("eRing").style.strokeDashoffset=176*(1-Math.min(1,eps/2));
-  document.getElementById("eVal").textContent=eps.toFixed(1);
-  document.getElementById("epsLbl").textContent=eps.toFixed(1)+"/s";
-  const eph=Math.round(epm*60),epd=eph*24,epmth=epd*30,sph=Math.round(spm*60),spd=sph*24,spmth=spd*30;
-  document.getElementById("enH").textContent=fmt(eph);document.getElementById("enD").textContent=fmt(epd);document.getElementById("enM").textContent=fmt(epmth);
-  document.getElementById("ebH").style.width=Math.min(100,eph/2000*100)+"%";document.getElementById("ebD").style.width=Math.min(100,epd/48000*100)+"%";document.getElementById("ebM").style.width=Math.min(100,epmth/1440000*100)+"%";
-  document.getElementById("snH").textContent=fmt(sph);document.getElementById("snD").textContent=fmt(spd);document.getElementById("snM").textContent=fmt(spmth);
-  document.getElementById("sbH").style.width=Math.min(100,sph/6000*100)+"%";document.getElementById("sbD").style.width=Math.min(100,spd/144000*100)+"%";document.getElementById("sbM").style.width=Math.min(100,spmth/4320000*100)+"%";
-  document.getElementById("subEm").textContent=`~${fmt(eph)}/h · ${fmt(epd)}/dia`;
-  document.getElementById("subSt").textContent=`~${fmt(sph)}/h · ${fmt(spd)}/dia`;
+let lastEstimates=null;
+async function updateEstimates(){
+  try{
+    const e=await api("/api/estimates");
+    lastEstimates=e;
+    const gf=document.getElementById("gFill");if(gf)gf.style.strokeDashoffset=207*(1-Math.min(1,e.emails_per_minute/30));
+    document.getElementById("gVal").textContent=Math.round(e.emails_per_minute);
+    document.getElementById("eRing").style.strokeDashoffset=176*(1-Math.min(1,e.emails_per_second/1));
+    document.getElementById("eVal").textContent=e.emails_per_second.toFixed(1);
+    document.getElementById("epsLbl").textContent=e.emails_per_second.toFixed(1)+"/s";
+    document.getElementById("enH").textContent=fmt(e.emails_per_hour);
+    document.getElementById("enD").textContent=fmt(e.emails_per_day);
+    document.getElementById("enM").textContent=fmt(e.emails_per_month);
+    document.getElementById("ebH").style.width=Math.min(100,e.emails_per_hour/1000*100)+"%";
+    document.getElementById("ebD").style.width=Math.min(100,e.emails_per_day/24000*100)+"%";
+    document.getElementById("ebM").style.width=Math.min(100,e.emails_per_month/720000*100)+"%";
+    document.getElementById("snH").textContent=fmt(e.sites_per_hour);
+    document.getElementById("snD").textContent=fmt(e.sites_per_day);
+    document.getElementById("snM").textContent=fmt(e.sites_per_month);
+    document.getElementById("sbH").style.width=Math.min(100,e.sites_per_hour/5000*100)+"%";
+    document.getElementById("sbD").style.width=Math.min(100,e.sites_per_day/120000*100)+"%";
+    document.getElementById("sbM").style.width=Math.min(100,e.sites_per_month/3600000*100)+"%";
+    document.getElementById("subEm").textContent=`~${fmt(e.emails_per_hour)}/h · ${fmt(e.emails_per_day)}/dia`;
+    document.getElementById("subSt").textContent=`~${fmt(e.sites_per_hour)}/h · ${fmt(e.sites_per_day)}/dia`;
+    // Calculadora
+    const calc=document.getElementById("calcResults");
+    if(calc&&e.scaling){
+      const s=e.scaling;const c=e.compare_964_vs_300;
+      calc.innerHTML=`
+        <div style="margin-bottom:1rem"><div class="llbl">Por worker</div><div style="font-size:.85rem">${e.emails_per_worker_hour} emails/h · ${e.sites_per_worker_hour} sites/h · ${e.avg_job_duration_min} min/job</div></div>
+        <div style="margin-bottom:1rem"><div class="llbl">+10 workers extra</div><div style="font-size:.85rem;color:var(--acc)">+${fmt(s.per_extra_10_workers.extra_emails_hour)} emails/h · +${fmt(s.per_extra_10_workers.extra_emails_day)} emails/dia · +${s.per_extra_10_workers.extra_traffic_gb_day} GB/dia tráfego</div></div>
+        <div style="margin-bottom:1rem"><div class="llbl">964 cidades (padrão)</div><div style="font-size:.85rem">~${fmt(c.standard_964.est_emails)} emails · ~${fmt(c.standard_964.est_sites)} sites · ${c.standard_964.est_hours}h com ${e.workers_online} workers</div></div>
+        <div><div class="llbl">300 cidades (maiores)</div><div style="font-size:.85rem">~${fmt(c.major_300.est_emails)} emails · ~${fmt(c.major_300.est_sites)} sites · ${c.major_300.est_hours}h com ${e.workers_online} workers</div></div>
+      `;
+    }
+  }catch(e){console.error("estimates",e)}
 }
 async function api(p,o={}){const h=Object.assign({"Content-Type":"application/json"},o.headers||{});if(token)h["Authorization"]="Bearer "+token;const r=await fetch(p,{...o,headers:h});if(r.status===401){token="";localStorage.removeItem("lf_token");showLogin();throw new Error("auth")}if(!r.ok)throw new Error(await r.text());return(r.headers.get("content-type")||"").includes("json")?r.json():r.text()}
 function showLogin(){document.getElementById("login").style.display="flex";document.getElementById("app").style.display="none"}
@@ -387,7 +425,7 @@ async function refresh(){
   const stSession=s.websites_session??s.websites_total??s.websites??0;
   const emTotal=s.emails_total??s.emails??0;
   const stTotal=s.websites_total??s.websites??0;
-  track(eHist,emSession);track(sHist,stSession);updateSpeed();
+  updateEstimates();
   document.getElementById("vEm").textContent=fmt(emSession);document.getElementById("vSt").textContent=fmt(stSession);
   document.getElementById("totEm").textContent=`Total desde o início: ${fmt(emTotal)} emails`;
   document.getElementById("totSt").textContent=`Total desde o início: ${fmt(stTotal)} sites`;
@@ -414,11 +452,45 @@ async function requeueFailed(){const r=await api("/api/jobs/requeue-failed",{met
 async function startCampaign(){const seg=document.getElementById("segment").value.trim();if(!seg)return;const btn=document.getElementById("btnCamp");btn.disabled=true;btn.textContent="…";try{const r=await api("/api/campaigns",{method:"POST",body:JSON.stringify({segment:seg,country:document.getElementById("country").value,cities:[],city_scope:document.getElementById("cityScope").value,auto_translate:true,replace_active:!!document.getElementById("replaceActive").checked})});document.getElementById("campMsg").textContent=`✓ ${r.jobs_created} jobs · ${r.cities} mun.`;refresh()}finally{btn.disabled=false;btn.textContent="Enfileirar"}}
 async function cancelW(s){const seg=decodeURIComponent(s);if(!confirm(`Cancelar "${seg}"?`))return;await api("/api/works/cancel",{method:"POST",body:JSON.stringify({segment:seg,country:"MX"})});refresh()}
 function dlCsv(s){const seg=decodeURIComponent(s);fetch("/api/export.csv?segment="+encodeURIComponent(seg),{headers:{Authorization:"Bearer "+token}}).then(r=>{if(!r.ok)throw 0;const cd=r.headers.get("Content-Disposition")||"";const m=/filename="?([^";]+)"?/i.exec(cd);return r.blob().then(b=>({b,n:m?m[1]:"leads-"+seg+".csv"}))}).then(({b,n})=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;a.click()})}
-let _tt;document.getElementById("segment").addEventListener("input",()=>{clearTimeout(_tt);_tt=setTimeout(async()=>{const t=document.getElementById("segment").value.trim();if(!t){document.getElementById("trPrev").textContent="→ —";return}try{const r=await api("/api/translate",{method:"POST",body:JSON.stringify({text:t,country:"MX"})});document.getElementById("trPrev").textContent=`→ ${r.example_query||r.translated}`}catch(_){}},350)});
+let _tt;document.getElementById("segment").addEventListener("input",()=>{clearTimeout(_tt);_tt=setTimeout(async()=>{const t=document.getElementById("segment").value.trim();if(!t){document.getElementById("trPrev").textContent="→ —";return}try{const r=await api("/api/translate",{method:"POST",body:JSON.stringify({text:t,country:"MX"})});document.getElementById("trPrev").textContent=`→ ${r.example_query||r.translated}`}catch(_){}checkSegment()},400)});
 async function addWorker(){const n=document.getElementById("wname").value.trim();if(!n)return;const r=await api("/api/workers",{method:"POST",body:JSON.stringify({name:n,ip:document.getElementById("wip").value.trim()})});document.getElementById("wout").style.display="block";document.getElementById("wout").textContent=`${r.name}: ${r.token}`;refresh()}
 async function togglePause(id,paused){
   await api(`/api/workers/${id}/pause`,{method:"POST",body:JSON.stringify({paused})});
   refresh();
+}
+function runCalc(){
+  if(!lastEstimates)return;
+  const extra=parseInt(document.getElementById("calcWorkers").value)||10;
+  const e=lastEstimates;
+  const eph=Math.round(e.emails_per_worker_hour*extra);
+  const sph=Math.round(e.sites_per_worker_hour*extra);
+  const out=document.getElementById("calcOutput");
+  out.innerHTML=`<div style="padding:1rem;background:var(--card2);border-radius:10px">
+    <div style="font-size:1.1rem;font-weight:700;color:var(--acc);margin-bottom:.5rem">+${extra} Workers</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;font-size:.82rem">
+      <div>+${fmt(eph)} emails/hora</div><div>+${fmt(sph)} sites/hora</div>
+      <div>+${fmt(eph*24)} emails/dia</div><div>+${fmt(sph*24)} sites/dia</div>
+      <div>+${fmt(eph*24*30)} emails/mês</div><div>+${fmt(sph*24*30)} sites/mês</div>
+      <div>~${(sph*24*0.5/1000).toFixed(1)} GB/dia tráfego extra</div>
+      <div>Total estimado: ${fmt(e.emails_per_hour+eph)} emails/h</div>
+    </div>
+  </div>`;
+}
+let _segTimer;
+async function checkSegment(){
+  const seg=document.getElementById("segment").value.trim();
+  const warn=document.getElementById("segWarn");
+  if(!seg||!warn){if(warn)warn.innerHTML="";return}
+  try{
+    const r=await api("/api/check-segment",{method:"POST",body:JSON.stringify({segment:seg})});
+    if(r.exists){
+      warn.innerHTML=`<span style="color:var(--orange)">⚠️ Você já buscou por "<b>${r.exact_match}</b>" (${r.info.emails} emails, ${r.info.jobs} jobs). Deseja buscar novamente?</span>`;
+    }else if(r.similar&&r.similar.length){
+      warn.innerHTML=`<span style="color:var(--tx2)">Similar: ${r.similar.join(", ")}</span>`;
+    }else{
+      warn.innerHTML=`<span style="color:var(--acc)">✓ Novo segmento</span>`;
+    }
+  }catch(_){if(warn)warn.innerHTML=""}
 }
 async function resetCounter(){
   if(!confirm("Zerar o contador de sessão?\n\nOs dados NÃO serão apagados — apenas o contador visual zera.\nO total histórico continua visível."))return;
