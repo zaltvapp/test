@@ -277,6 +277,15 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
     </div></div>
   </div>
 
+  <div class="panel" id="trafficPanel" style="margin-bottom:1.5rem"><div class="panel-h"><h3>Tráfego Proxy (Evomi)</h3></div><div class="panel-b">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem" id="trafficGrid">
+      <div><div class="llbl">24h</div><div style="font-size:1.3rem;font-weight:800;color:var(--acc)" id="trf24h">—</div></div>
+      <div><div class="llbl">7 dias</div><div style="font-size:1.3rem;font-weight:800;color:var(--blue)" id="trf7d">—</div></div>
+      <div><div class="llbl">Por hora</div><div style="font-size:1.1rem;font-weight:700;color:var(--tx)" id="trfHour">—</div></div>
+      <div><div class="llbl">Por dia (est.)</div><div style="font-size:1.1rem;font-weight:700;color:var(--tx)" id="trfDay">—</div></div>
+    </div>
+  </div></div>
+
   <div class="panel"><div class="panel-h"><h3>Campanhas</h3></div><div class="panel-b">
     <div class="camp-list" id="campList"></div>
   </div></div>
@@ -383,6 +392,7 @@ async function refresh(){
   if(a.last_success){document.getElementById("okBox").innerHTML=`<span class="ok">✓</span> #${a.last_success.id} · ${a.last_success.contacts}`}
   if(a.last_fail){document.getElementById("failBox").innerHTML=`<span class="bad">✕</span> #${a.last_fail.id}`}
   if(a.ip_health){const h=a.ip_health;document.getElementById("ipBox").innerHTML=`<span class="${h.level==="ok"?"ok":"warn"}">●</span> ${h.level} · ${h.message}`}
+  try{const trf=await api("/api/proxy-traffic");if(trf&&!trf.error){document.getElementById("trf24h").textContent=`${trf.bandwidth_24h_gb} GB`;document.getElementById("trf7d").textContent=`${trf.bandwidth_7d_gb} GB`;document.getElementById("trfHour").textContent=`${trf.bandwidth_per_hour_mb} MB/h`;document.getElementById("trfDay").textContent=`${trf.bandwidth_per_day_gb} GB/dia`}}catch(e){console.error("traffic",e)}
   try{const ws=await api("/api/workers");document.getElementById("workersTbl").innerHTML=`<table><thead><tr><th>Nome</th><th>IP</th><th>Status</th><th>Job</th><th></th></tr></thead><tbody>${ws.map(w=>`<tr><td style="font-weight:600">${w.name}</td><td style="color:var(--tx2);font-size:.72rem">${w.ip||""}</td><td><span class="pill ${w.online&&!w.paused?"on":"off"}">${w.paused?"pausado":w.online?"online":"off"}</span></td><td>${w.current_job_id||"—"}</td><td><button class="btn-s btn-t" onclick="togglePause(${w.id},${!w.paused})">${w.paused?"▶ Retomar":"⏸ Pausar"}</button></td></tr>`).join("")}</tbody></table>`}catch(e){console.error("workers",e)}
   try{const wk=await api("/api/works");document.getElementById("works").innerHTML=`<table><thead><tr><th>Segmento</th><th>%</th><th>Emails</th><th>Sites</th><th></th></tr></thead><tbody>${wk.map(w=>{const t=Math.max(1,(w.jobs_done||0)+(w.jobs_running||0)+(w.jobs_pending||0)+(w.jobs_failed||0)+(w.jobs_blocked||0));const p=Math.min(100,Math.round(((w.jobs_done||0)/t)*1000)/10);const seg=encodeURIComponent(w.segment);const wc=!!prevWorkStatus[w.segment],nc=isWC(w);if(prevWorkStatus[w.segment]!==undefined&&!wc&&nc)toast(w.segment);prevWorkStatus[w.segment]=nc;return `<tr><td><b>${w.segment}</b></td><td>${p}%</td><td class="ok">${fmt(w.emails||0)}</td><td>${fmt((w.leads||0)-(w.emails||0))}</td><td><button class="btn-s btn-t" onclick="dlCsv('${seg}')">CSV</button>${w.can_cancel?` <button class="btn-d btn-t" onclick="cancelW('${seg}')">×</button>`:""}</td></tr>`}).join("")}</tbody></table>`}catch(e){console.error("works",e)}
   try{const jp=jobFilter==="live"?"/api/jobs?limit=30":`/api/jobs?status=${jobFilter}&limit=30`;const js=await api(jp);document.getElementById("jobsTbl").innerHTML=`<table><thead><tr><th>ID</th><th>Busca</th><th>Status</th><th>Hits</th><th>Via</th></tr></thead><tbody>${js.map(j=>{const st=j.status==="done"?"ok":j.status==="failed"||j.status==="blocked"?"bad":j.status==="running"?"ok":"warn";return `<tr><td>#${j.id}</td><td>${j.query||((j.segment||"")+" · "+(j.city||""))}</td><td class="${st}">${j.status}</td><td>${j.contacts||0}</td><td>${j.proxy_mode||"—"}</td></tr>`}).join("")}</tbody></table>`}catch(e){console.error("jobs",e)}
