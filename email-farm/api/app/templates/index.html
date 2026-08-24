@@ -209,11 +209,15 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 
 /* Login */
 #login{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:10}
-.lbox{width:min(400px,92%);padding:2.5rem 2rem;background:var(--card);border:1px solid var(--brd);border-radius:var(--r);box-shadow:0 0 60px rgba(0,0,0,.3);position:relative;overflow:hidden}
+.lbox{width:min(400px,92%);padding:2.5rem 2rem;background:var(--card);border:1px solid var(--brd-h);border-radius:var(--r);box-shadow:0 0 60px rgba(0,0,0,.3);position:relative;overflow:hidden}
 .lbox::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--acc),var(--blue),var(--purple));background-size:200% 100%;animation:hdr-flow 4s linear infinite}
 @keyframes hdr-flow{from{background-position:0 0}to{background-position:200% 0}}
 .lbox h1{font-size:2rem;font-weight:900;margin-bottom:.3rem}.lbox h1 span{color:var(--acc)}
 .lbox .sub{color:var(--tx2);font-size:.85rem;margin-bottom:1.5rem}
+.lbox label{color:var(--tx);font-size:.8rem;font-weight:600;margin-top:1rem}
+.lbox input{background:var(--card2);border:1px solid var(--brd-h);color:var(--tx);font-size:.9rem;padding:.7rem .9rem;margin-top:.3rem}
+.lbox input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(0,220,150,.15)}
+.lbox .btn-p{margin-top:1.2rem;width:100%;padding:.75rem;font-size:.9rem}
 #loginErr{min-height:.8rem;margin-top:.5rem;font-size:.8rem;color:var(--red)}
 #app{display:none}
   </style>
