@@ -259,7 +259,14 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 </aside>
 <main class="main">
 
-<div class="hdr"><h1>Leads<span>.</span>Farm</h1><span class="live-pill" id="livePill">— online</span></div>
+<div class="hdr">
+  <h1>Leads<span>.</span>Farm</h1>
+  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+    <button class="btn-s btn-t" id="speedBtn" onclick="toggleSpeed()" style="font-size:.7rem">⚡ Velocidade normal</button>
+    <button class="btn-s btn-t" onclick="exportAll()" style="font-size:.7rem">📥 Exportar tudo</button>
+    <span class="live-pill" id="livePill">— online</span>
+  </div>
+</div>
 
 <!-- DASHBOARD -->
 <div class="page on" id="pg-dash">
@@ -345,17 +352,31 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 
 <!-- ANALISE -->
 <div class="page" id="pg-calc">
-  <div class="panel"><div class="panel-h"><h3>Performance & Estimativas</h3></div><div class="panel-b" id="calcResults" style="line-height:1.8">Carregando dados reais...</div></div>
+  <div class="panel"><div class="panel-h"><h3>Performance & Estimativas</h3></div><div class="panel-b" id="calcResults" style="line-height:1.8">Carregando...</div></div>
+
+  <div class="panel"><div class="panel-h"><h3>Comparativo por Segmento (taxa de email)</h3></div><div class="panel-b"><div id="segRates">Carregando...</div></div></div>
+
+  <div class="panel"><div class="panel-h"><h3>Performance 24h (emails/hora)</h3></div><div class="panel-b"><div id="perfHistory" style="display:flex;align-items:flex-end;gap:3px;height:80px;padding-top:.5rem"></div></div></div>
+
   <div class="panel"><div class="panel-h"><h3>Calculadora de Scaling</h3></div><div class="panel-b">
-    <p class="hint" style="margin:0 0 1rem">Simule o impacto de adicionar mais VPS ao farm (baseado na performance real das últimas horas).</p>
+    <p class="hint" style="margin:0 0 1rem">Simule +N workers baseado na performance real.</p>
     <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
       <div><div class="llbl">Workers extras</div><input id="calcWorkers" type="number" value="10" min="1" max="100" style="width:80px"/></div>
       <button class="btn-p" onclick="runCalc()">Calcular</button>
     </div>
     <div id="calcOutput" style="margin-top:1rem"></div>
   </div></div>
+
+  <div class="panel"><div class="panel-h"><h3>Buscas Bloqueadas</h3></div><div class="panel-b">
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+      <button class="btn-p" onclick="retryBlocked(false)">Retry 24h+ (automático)</button>
+      <button class="btn-s" onclick="retryBlocked(true)">Forçar retry todos</button>
+    </div>
+    <div id="blockedList">Carregando...</div>
+  </div></div>
+
   <div class="panel"><div class="panel-h"><h3>Recomendação</h3></div><div class="panel-b">
-    <p class="hint" style="margin:0">• <b>964 cidades</b> = cobertura total MX (~91% pop.) — mais emails no total, ideal para segmentos amplos<br>• <b>300 cidades</b> = só cidades grandes (>78k hab.) — mais emails <i>por cidade</i>, menos tráfego, ideal para segmentos específicos<br>• Com 30 workers, ambos completam rápido. Use 300 para testes rápidos e 964 para extração completa.<br>• Cada +10 workers aumenta ~35% a velocidade proporcional.</p>
+    <p class="hint" style="margin:0">• <b>964 cidades</b> = cobertura total (~91% pop MX) — ideal segmentos amplos<br>• <b>300 cidades</b> = só maiores (>78k hab) — testes rápidos, menos tráfego<br>• Com 30 workers: 964 cidades ~30min/campanha, 300 ~10min<br>• +10 workers ≈ +35% velocidade proporcional<br>• Melhores segmentos p/ email: software, escolas, arquitetos, logística (>30% taxa)</p>
   </div></div>
 </div>
 
@@ -445,11 +466,22 @@ async function refresh(){
   if(a.ip_health){const h=a.ip_health;document.getElementById("ipBox").innerHTML=`<span class="${h.level==="ok"?"ok":"warn"}">●</span> ${h.level} · ${h.message}`}
   try{const trf=await api("/api/proxy-traffic");if(trf&&!trf.error){document.getElementById("trf24h").textContent=`${trf.bandwidth_24h_gb} GB`;document.getElementById("trf7d").textContent=`${trf.bandwidth_7d_gb} GB`;document.getElementById("trfHour").textContent=`${trf.bandwidth_per_hour_mb} MB/h`;document.getElementById("trfDay").textContent=`${trf.bandwidth_per_day_gb} GB/dia`}}catch(e){console.error("traffic",e)}
   try{const ws=await api("/api/workers");document.getElementById("workersTbl").innerHTML=`<table><thead><tr><th>Nome</th><th>IP</th><th>Status</th><th>Job</th><th></th></tr></thead><tbody>${ws.map(w=>`<tr><td style="font-weight:600">${w.name}</td><td style="color:var(--tx2);font-size:.72rem">${w.ip||""}</td><td><span class="pill ${w.online&&!w.paused?"on":"off"}">${w.paused?"pausado":w.online?"online":"off"}</span></td><td>${w.current_job_id||"—"}</td><td><button class="btn-s btn-t" onclick="togglePause(${w.id},${!w.paused})">${w.paused?"▶ Retomar":"⏸ Pausar"}</button></td></tr>`).join("")}</tbody></table>`}catch(e){console.error("workers",e)}
-  try{const wk=await api("/api/works");document.getElementById("works").innerHTML=`<table><thead><tr><th>Segmento</th><th>%</th><th>Emails</th><th>Sites</th><th></th></tr></thead><tbody>${wk.map(w=>{const t=Math.max(1,(w.jobs_done||0)+(w.jobs_running||0)+(w.jobs_pending||0)+(w.jobs_failed||0)+(w.jobs_blocked||0));const p=Math.min(100,Math.round(((w.jobs_done||0)/t)*1000)/10);const seg=encodeURIComponent(w.segment);const wc=!!prevWorkStatus[w.segment],nc=isWC(w);if(prevWorkStatus[w.segment]!==undefined&&!wc&&nc)toast(w.segment);prevWorkStatus[w.segment]=nc;return `<tr><td><b>${w.segment}</b></td><td>${p}%</td><td class="ok">${fmt(w.emails||0)}</td><td>${fmt((w.leads||0)-(w.emails||0))}</td><td><button class="btn-s btn-t" onclick="dlCsv('${seg}')">CSV</button>${w.can_cancel?` <button class="btn-d btn-t" onclick="cancelW('${seg}')">×</button>`:""}</td></tr>`}).join("")}</tbody></table>`}catch(e){console.error("works",e)}
+  try{const wk=await api("/api/works");document.getElementById("works").innerHTML=`<table><thead><tr><th>Segmento</th><th>Método</th><th>%</th><th>Emails</th><th>Sites</th><th></th></tr></thead><tbody>${wk.map(w=>{const t=Math.max(1,(w.jobs_done||0)+(w.jobs_running||0)+(w.jobs_pending||0)+(w.jobs_failed||0)+(w.jobs_blocked||0));const p=Math.min(100,Math.round(((w.jobs_done||0)/t)*1000)/10);const seg=encodeURIComponent(w.segment);const method=t>500?"964 cidades":t>200?"300 maiores":`${t} cidades`;const wc=!!prevWorkStatus[w.segment],nc=isWC(w);if(prevWorkStatus[w.segment]!==undefined&&!wc&&nc)toast(w.segment);prevWorkStatus[w.segment]=nc;return `<tr><td><b>${w.segment}</b></td><td><span style="font-size:.65rem;padding:.15rem .4rem;border-radius:4px;background:var(--card2)">${method}</span></td><td>${p}%</td><td class="ok">${fmt(w.emails||0)}</td><td>${fmt((w.leads||0)-(w.emails||0))}</td><td><button class="btn-s btn-t" onclick="dlCsv('${seg}')">CSV</button>${w.can_cancel?` <button class="btn-d btn-t" onclick="cancelW('${seg}')">×</button>`:""}</td></tr>`}).join("")}</tbody></table>`}catch(e){console.error("works",e)}
   try{const jp=jobFilter==="live"?"/api/jobs?limit=30":`/api/jobs?status=${jobFilter}&limit=30`;const js=await api(jp);document.getElementById("jobsTbl").innerHTML=`<table><thead><tr><th>ID</th><th>Busca</th><th>Status</th><th>Hits</th><th>Via</th></tr></thead><tbody>${js.map(j=>{const st=j.status==="done"?"ok":j.status==="failed"||j.status==="blocked"?"bad":j.status==="running"?"ok":"warn";return `<tr><td>#${j.id}</td><td>${j.query||((j.segment||"")+" · "+(j.city||""))}</td><td class="${st}">${j.status}</td><td>${j.contacts||0}</td><td>${j.proxy_mode||"—"}</td></tr>`}).join("")}</tbody></table>`}catch(e){console.error("jobs",e)}
 }
 async function requeueFailed(){const r=await api("/api/jobs/requeue-failed",{method:"POST",body:"{}"});document.getElementById("campMsg").textContent=`↻ ${r.requeued}`;refresh()}
-async function startCampaign(){const seg=document.getElementById("segment").value.trim();if(!seg)return;const btn=document.getElementById("btnCamp");btn.disabled=true;btn.textContent="…";try{const r=await api("/api/campaigns",{method:"POST",body:JSON.stringify({segment:seg,country:document.getElementById("country").value,cities:[],city_scope:document.getElementById("cityScope").value,auto_translate:true,replace_active:!!document.getElementById("replaceActive").checked})});document.getElementById("campMsg").textContent=`✓ ${r.jobs_created} jobs · ${r.cities} mun.`;refresh()}finally{btn.disabled=false;btn.textContent="Enfileirar"}}
+async function startCampaign(){
+  const seg=document.getElementById("segment").value.trim();if(!seg)return;
+  // Check duplicata
+  try{
+    const chk=await api("/api/check-segment",{method:"POST",body:JSON.stringify({segment:seg})});
+    if(chk.exists){
+      if(!confirm(`⚠️ SEGMENTO JÁ BUSCADO!\n\n"${chk.exact_match}" já tem ${chk.info.emails} emails e ${chk.info.jobs} jobs.\n\nDeseja buscar novamente mesmo assim?`))return;
+    }
+  }catch(_){}
+  const btn=document.getElementById("btnCamp");btn.disabled=true;btn.textContent="…";
+  try{const r=await api("/api/campaigns",{method:"POST",body:JSON.stringify({segment:seg,country:document.getElementById("country").value,cities:[],city_scope:document.getElementById("cityScope").value,auto_translate:true,replace_active:!!document.getElementById("replaceActive").checked})});document.getElementById("campMsg").textContent=`✓ ${r.jobs_created} jobs · ${r.cities} mun. (${document.getElementById("cityScope").value})`;refresh()}finally{btn.disabled=false;btn.textContent="Enfileirar"}
+}
 async function cancelW(s){const seg=decodeURIComponent(s);if(!confirm(`Cancelar "${seg}"?`))return;await api("/api/works/cancel",{method:"POST",body:JSON.stringify({segment:seg,country:"MX"})});refresh()}
 function dlCsv(s){const seg=decodeURIComponent(s);fetch("/api/export.csv?segment="+encodeURIComponent(seg),{headers:{Authorization:"Bearer "+token}}).then(r=>{if(!r.ok)throw 0;const cd=r.headers.get("Content-Disposition")||"";const m=/filename="?([^";]+)"?/i.exec(cd);return r.blob().then(b=>({b,n:m?m[1]:"leads-"+seg+".csv"}))}).then(({b,n})=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=n;a.click()})}
 let _tt;document.getElementById("segment").addEventListener("input",()=>{clearTimeout(_tt);_tt=setTimeout(async()=>{const t=document.getElementById("segment").value.trim();if(!t){document.getElementById("trPrev").textContent="→ —";return}try{const r=await api("/api/translate",{method:"POST",body:JSON.stringify({text:t,country:"MX"})});document.getElementById("trPrev").textContent=`→ ${r.example_query||r.translated}`}catch(_){}checkSegment()},400)});
@@ -457,6 +489,51 @@ async function addWorker(){const n=document.getElementById("wname").value.trim()
 async function togglePause(id,paused){
   await api(`/api/workers/${id}/pause`,{method:"POST",body:JSON.stringify({paused})});
   refresh();
+}
+async function toggleSpeed(){
+  const cur=await api("/api/speed-mode");
+  const next=!cur.enabled;
+  if(next&&!confirm("Ativar VELOCIDADE MÁXIMA?\n\nIsso reduz delays e aumenta workers por site.\nUsa mais tráfego proxy mas nunca trava os VPS.\n\nDeseja ativar?"))return;
+  await api("/api/speed-mode",{method:"POST",body:JSON.stringify({enabled:next})});
+  document.getElementById("speedBtn").textContent=next?"🔥 VELOCIDADE MAX":"⚡ Velocidade normal";
+  document.getElementById("speedBtn").style.background=next?"var(--orange)":"";
+  document.getElementById("speedBtn").style.color=next?"#000":"";
+}
+async function loadSpeedState(){
+  try{const s=await api("/api/speed-mode");if(s.enabled){document.getElementById("speedBtn").textContent="🔥 VELOCIDADE MAX";document.getElementById("speedBtn").style.background="var(--orange)";document.getElementById("speedBtn").style.color="#000"}}catch(_){}
+}
+function exportAll(){window.open("/api/export-all.csv?token="+token)}
+async function retryBlocked(force){
+  const r=await api("/api/blocked-jobs/retry",{method:"POST",body:JSON.stringify({force})});
+  alert(`${r.requeued} jobs reenfileirados!`);
+  loadBlocked();
+}
+async function loadBlocked(){
+  try{
+    const d=await api("/api/blocked-jobs");
+    const el=document.getElementById("blockedList");
+    if(!el)return;
+    if(!d.jobs.length){el.innerHTML='<span class="hint">Nenhum bloqueado ✓</span>';return}
+    el.innerHTML=`<div style="font-size:.75rem;color:var(--tx2);margin-bottom:.5rem">${d.total} bloqueados · ${d.auto_retry_eligible} prontos pra retry (24h+)</div><table><thead><tr><th>ID</th><th>Query</th><th>Status</th><th>Idade</th></tr></thead><tbody>${d.jobs.slice(0,20).map(j=>`<tr><td>#${j.id}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.query}</td><td class="${j.can_auto_retry?"warn":"bad"}">${j.status}</td><td>${j.age_hours}h</td></tr>`).join("")}</tbody></table>`;
+  }catch(e){console.error("blocked",e)}
+}
+async function loadSegRates(){
+  try{
+    const rates=await api("/api/segment-rates");
+    const el=document.getElementById("segRates");if(!el)return;
+    el.innerHTML=`<table><thead><tr><th>Segmento</th><th>Taxa Email</th><th>Emails</th><th>Leads</th></tr></thead><tbody>${rates.slice(0,15).map(r=>`<tr><td><b>${r.segment}</b></td><td><span style="color:${r.email_rate>30?"var(--acc)":r.email_rate>15?"var(--orange)":"var(--red)"}">${r.email_rate}%</span></td><td>${fmt(r.emails)}</td><td>${fmt(r.leads)}</td></tr>`).join("")}</tbody></table>`;
+  }catch(e){console.error("rates",e)}
+}
+async function loadPerfHistory(){
+  try{
+    const d=await api("/api/performance-history");
+    const el=document.getElementById("perfHistory");if(!el)return;
+    const maxE=Math.max(...d.hours.map(h=>h.emails),1);
+    el.innerHTML=d.hours.map(h=>{
+      const pct=Math.max(2,h.emails/maxE*100);
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%" title="${h.hour}: ${h.emails} emails"><div style="width:100%;height:${pct}%;background:linear-gradient(var(--acc),var(--blue));border-radius:3px 3px 0 0;min-height:2px"></div><div style="font-size:.5rem;color:var(--tx3);margin-top:2px">${h.hour.split(":")[0]}</div></div>`;
+    }).join("");
+  }catch(e){console.error("perf",e)}
 }
 function runCalc(){
   if(!lastEstimates)return;
@@ -498,7 +575,10 @@ async function resetCounter(){
   eHist=[];sHist=[];
   refresh();
 }
-if(token)showApp();setInterval(()=>{if(token)refresh().catch(()=>{})},6000);
+if(token)showApp();
+setInterval(()=>{if(token)refresh().catch(()=>{})},6000);
+setInterval(()=>{if(token){loadBlocked();loadSegRates();loadPerfHistory()}},30000);
+setTimeout(()=>{if(token){loadSpeedState();loadBlocked();loadSegRates();loadPerfHistory()}},2000);
 </script>
 </body>
 </html>
