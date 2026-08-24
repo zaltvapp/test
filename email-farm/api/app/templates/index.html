@@ -226,14 +226,23 @@ button{font:inherit;font-size:.8rem;font-weight:700;border:none;border-radius:10
 <div class="amb"><div class="orb o1"></div><div class="orb o2"></div></div>
 <div id="fxLayer"></div>
 
-<div id="login"><div class="lbox">
-  <h1>Leads<span>.</span>Farm</h1>
-  <p class="sub">Captura de emails & sites · México</p>
-  <label>Usuário</label><input id="user" value="admin"/>
-  <label>Senha</label><input id="pass" type="password"/>
-  <div class="factions"><button class="btn-p" onclick="doLogin()">Entrar</button></div>
-  <p id="loginErr"></p>
-</div></div>
+<div id="login" style="min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:10">
+  <div style="width:380px;max-width:92%;padding:2.5rem 2rem;background:#0f1620;border:1px solid rgba(0,220,150,.2);border-radius:14px;box-shadow:0 0 60px rgba(0,0,0,.4)">
+    <div style="height:3px;background:linear-gradient(90deg,#00dc96,#3b9eff,#a07cff);border-radius:3px;margin-bottom:1.5rem"></div>
+    <h1 style="font-size:2rem;font-weight:900;color:#eaf0f6;margin:0 0 .3rem">Leads<span style="color:#00dc96">.</span>Farm</h1>
+    <p style="color:#6e8494;font-size:.85rem;margin:0 0 1.8rem">Captura de emails & sites · México</p>
+    <div style="margin-bottom:1rem">
+      <div style="color:#eaf0f6;font-size:.8rem;font-weight:600;margin-bottom:.4rem">Usuário</div>
+      <input id="user" value="admin" style="width:100%;padding:.7rem .9rem;background:#141d28;border:1px solid #21262d;border-radius:10px;color:#eaf0f6;font-size:.9rem;outline:none"/>
+    </div>
+    <div style="margin-bottom:1.2rem">
+      <div style="color:#eaf0f6;font-size:.8rem;font-weight:600;margin-bottom:.4rem">Senha</div>
+      <input id="pass" type="password" style="width:100%;padding:.7rem .9rem;background:#141d28;border:1px solid #21262d;border-radius:10px;color:#eaf0f6;font-size:.9rem;outline:none"/>
+    </div>
+    <button onclick="doLogin()" style="width:100%;padding:.75rem;background:linear-gradient(135deg,#00dc96,#00b87a);color:#041a12;font-size:.9rem;font-weight:700;border:none;border-radius:10px;cursor:pointer">Entrar</button>
+    <p id="loginErr" style="color:#ff5252;font-size:.8rem;margin-top:.5rem;min-height:.8rem"></p>
+  </div>
+</div>
 
 <div id="app"><div class="layout">
 <aside class="sidebar">
